@@ -9,6 +9,8 @@ import time
 import hashlib
 import requests
 
+from astropy.table import QTable
+
 import workflows
 
 from scipy.stats import norm
