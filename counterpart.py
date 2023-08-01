@@ -10,6 +10,8 @@ import hashlib
 import requests
 
 from astropy.table import QTable
+import ligo.skymap.moc
+import healpy
 
 import workflows
 
@@ -295,19 +297,16 @@ class Event(DataAnalysis):
         if not hasattr(self,'_loc_map'):
 
             if len(self.healpix_url) > 0:
-                skymap = QTable.read(self.healpix_url)
+                try:
+                    skymap = QTable.read(self.healpix_url)
+                    d = ligo.skymap.moc.rasterize(skymap, order=8)
+                    skymap_local_fn = f'skymap_{self.gname}.fits'
 
-                import ligo.skymap.moc
-                import healpy
-
-                d = ligo.skymap.moc.rasterize(skymap, order=8)
-
-                skymap_local_fn = f'skymap_{self.gname}.fits'
-
-                healpy.write_map(skymap_local_fn, d['PROBDENSITY'], nest=True, overwrite=True)
-                # healpy.mollview(d['PROBDENSITY'], nest=True)
-
-                self.healpix_url = skymap_local_fn
+                    healpy.write_map(skymap_local_fn, d['PROBDENSITY'], nest=True, overwrite=True)
+                    # healpy.mollview(d['PROBDENSITY'], nest=True)                
+                    self.healpix_url = skymap_local_fn
+                except Exception as e:
+                    print("failed to read skymap, will read directly", self.healpix_url)
 
                 f = fits.open(self.healpix_url)
 
