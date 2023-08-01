@@ -295,7 +295,7 @@ class Event(DataAnalysis):
         if not hasattr(self,'_loc_map'):
 
             if len(self.healpix_url) > 0:
-                skymap = QTable.read(target_healpix_url)
+                skymap = QTable.read(self.healpix_url)
 
                 import ligo.skymap.moc
                 import healpy
