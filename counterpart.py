@@ -293,14 +293,19 @@ class Event(DataAnalysis):
         if not hasattr(self,'_loc_map'):
 
             if len(self.healpix_url) > 0:
-                # c = requests.get(self.healpix_url).content    
+                skymap = QTable.read(target_healpix_url)
 
-                # try:
-                #     b = gzip.open(BytesIO(c))
-                #     b.seek(0)
-                #     f = fits.open(b)
-                # except:
-                #     f = fits.open(BytesIO(c))
+                import ligo.skymap.moc
+                import healpy
+
+                d = ligo.skymap.moc.rasterize(skymap, order=8)
+
+                skymap_local_fn = f'skymap_{self.gname}.fits'
+
+                healpy.write_map(skymap_local_fn, d['PROBDENSITY'], nest=True, overwrite=True)
+                # healpy.mollview(d['PROBDENSITY'], nest=True)
+
+                self.healpix_url = skymap_local_fn
 
                 f = fits.open(self.healpix_url)
 
@@ -609,6 +614,15 @@ class OperationsReport(DataAnalysis):
         else:
             self.text = "INTEGRAL was not operational"
 
+from odafunction.executors import default_execute_to_value
+from odafunction.func.urifunc import URIipynbFunction
+
+def run_workflow(workflow, input):
+    f = URIipynbFunction.from_generic_uri("file://" + os.path.abspath(workflow))
+    print("found as", f)
+    f = f(**input)
+    print("found parameters applied as", f)
+    return default_execute_to_value(f, cached=True)['output_values']
 
 class CountLimits(DataAnalysis):
     input_target=Event
@@ -672,7 +686,18 @@ class CountLimits(DataAnalysis):
 
         # self.ias_data = ias_data
 
-        self.ias_data = json.load(open("integral_all_sky.json"))
+        # self.ias_data = json.load(open("integral_all_sky.json"))
+
+        print("\033[31mgetting ias data by running workflow\033[0m")
+
+        pars = dict(
+            t0_utc=self.input_target.trigger_time,
+            mode=self.input_datasource.datasource
+        )
+
+        print("running workflow with", pars)
+
+        self.ias_data = run_workflow("integralallsky.ipynb", pars)
 
         print("got ias data:")
         for k, v in self.ias_data.items():
