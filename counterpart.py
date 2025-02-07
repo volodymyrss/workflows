@@ -656,38 +656,15 @@ class CountLimits(DataAnalysis):
         return [t for t in targets if t in self.input_iselect.targets]
     
     def get_count_limit(self,target, scale, nsig=None):
-        if self.input_datasource.datasource == "rt":
-            return self.get_count_limit_rt(target, scale, nsig)
+        # if self.input_datasource.datasource == "rt":
+        return self.get_count_limit_rt(target, scale, nsig)
 
-        if self.input_datasource.datasource == "nrt":
-            return self.get_count_limit_nrt(target, scale, nsig)
+        # if self.input_datasource.datasource == "nrt":
+        # return self.get_count_limit_nrt(target, scale, nsig)
 
         # fail
 
     def get_ias(self, nrt=False):
-        # ntries=50
-
-        # if nrt:
-        #     ep = {"rt": 0, "nrt": 1}
-        # else:
-        #     ep = {}
-
-        # while ntries>0:
-        #     try:
-        #         ias_data = workflows.evaluate('odahub', 'integral-all-sky', 'integralallsky', t0_utc=self.input_target.trigger_time, **ep)
-        #         if 'summary' in ias_data:
-        #             print("managed to get useful rt data")
-        #             break
-        #     except Exception as e:
-        #         print("failed to rt data: ", repr(e))
-
-        #     print("waiting...",ntries)
-        #     time.sleep(3)
-        #     ntries-=1
-
-        # self.ias_data = ias_data
-
-        # self.ias_data = json.load(open("integral_all_sky.json"))
 
         print("\033[31mgetting ias data by running workflow\033[0m")
 
@@ -807,10 +784,10 @@ class CountLimits(DataAnalysis):
                 for target in self.targets:
                     count_limits[kind][target] = self.get_count_limit(hkname[target], scale=self.input_assumptions.duration_by_kind[kind])
 
-        if self.input_datasource.datasource == "nrt":
-            self.duration_data = self.get_durations_nrt()
-        else:
-            self.duration_data = None
+        # if self.input_datasource.datasource == "nrt":
+        #     self.duration_data = self.get_durations_nrt()
+        # else:
+        self.duration_data = None
 
         self.count_limits=count_limits
 
